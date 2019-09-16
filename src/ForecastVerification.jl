@@ -1,5 +1,111 @@
 module ForecastVerification
 using Statistics
+using FFTW
+
+include("power_spectrum_2d.jl")
+
+"""
+    rms(x,y)
+
+Root mean square difference between `x` and `y`
+"""
+rms(x,y) = sqrt(mean((x - y).^2))
+export rms
+
+"""
+    crms(x,y)
+
+Centred root mean square difference between `x` and `y`
+"""
+crms(x,y) = rms(x .- mean(x),y .- mean(y))
+export crms
+
+bias(x,y) = mean(x) - mean(y)
+
+
+rms(x,y,sel) = rms(x[sel],y[sel])
+crms(x,y,sel) = crms(x[sel],y[sel])
+bias(x,y,sel) = bias(x[sel],y[sel])
+
+function summary(x,obs)
+    s = (rms = rms(x,obs),
+         crms = crms(x,obs),
+         bias = bias(x,obs),
+         cor = cor(x,obs),
+         std_x_obs = std(x)/std(obs),
+         count = length(x))
+
+    println("RMS         ",s.rms)
+    println("CRMS        ",s.crms)
+    println("bias        ",s.bias)
+    println("std_x_obs   ",s.std_x_obs)
+    println("correlation ",s.cor)
+    return s
+end
+
+
+function taylorstat(x::Vector,obs::Vector)
+    σ_x = std(x,corrected=false)
+    σ_obs = std(obs,corrected=false)
+
+    #@test σ_x^2 + σ_obs^2 - 2 * σ_x * σ_obs * cor(x,obs) ≈ crms(x,obs)^2
+
+    @show size(x),size(obs)
+    c = cor(x,obs)
+    CRMS = crms(x,obs)
+
+    return CRMS,c,σ_x,σ_obs
+end
+
+function taylorstat(x::Matrix,obs::Vector)
+    n = size(x,2)
+    CRMS = zeros(eltype(x),n)
+    c = zeros(eltype(x),n)
+    σ_x = zeros(eltype(x),n)
+    σ_obs = zero(eltype(x))
+
+    for i = 1:n
+        CRMS[i],c[i],σ_x[i],σ_obs = taylorstat(x[:,i],obs)
+    end
+    return CRMS,c,σ_x,σ_obs
+end
+
+function taylorplot(x::Matrix,obs::Vector; labels = fill(nothing,size(x,2)))
+    n = size(x,2)
+    CRMS,c,σ_x,σ_obs = taylorstat(x,obs)
+    taylorplot(CRMS,c,σ_x,σ_obs; labels = labels)
+end
+
+function taylorplot(CRMS,c,σ_x,σ_obs;
+                    labels = fill(nothing,length(CRMS)),
+                    obslabel = "observation")
+    n = length(CRMS)
+    ϕ = acos.(c)
+
+    plot(σ_obs,0,"x",label = obslabel)
+    for i = 1:n
+        plot(cos(ϕ[i]) * σ_x[i],sin(ϕ[i]) * σ_x[i],"o",label = labels[i])
+    end
+
+    lim = maximum([xlim()...,ylim()...])
+
+    xlim(0,lim)
+    ylim(0,lim)
+    loc,labels = xticks()
+
+    ax = gca()
+    for radius = loc
+        ax.add_patch(plt.Circle((0,0),radius = radius,fill = false, linewidth = 1, edgecolor = "gray"))
+    end
+
+    for radius = loc
+        ax.add_patch(plt.Circle((σ_obs,0),radius = radius,fill = false, linewidth = 1, edgecolor = "gray", linestyle = ":"))
+    end
+    #axis("scaled")
+    gca().set_aspect(1)
+
+    legend()
+end
 
 
 """
