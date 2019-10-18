@@ -1,5 +1,22 @@
 using Test, ForecastVerification
+using Statistics
 
+
+@testset "RMS" begin
+    x = [1,2.,3.,4,5]
+    y = [1,3.,2.,6,5]
+    sel = x .> 2
+
+    @test rms(x,y)^2 ≈ crms(x,y)^2 + bias(x,y)^2
+    @test rms(x,y,sel)^2 ≈ crms(x,y,sel)^2 + bias(x,y,sel)^2
+
+    obs = y
+    CRMS,c,σ_x,σ_obs = taylorstat(x,obs)
+    @test σ_x^2 + σ_obs^2 - 2 * σ_x * σ_obs * cor(x,obs) ≈ crms(x,obs)^2
+
+
+    taylorplot(x[:,1:1],obs)
+end
 
 @testset "Brier score" begin
 y_true = [  1,  0,  1,  1,  1,  0]

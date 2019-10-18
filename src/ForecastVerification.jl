@@ -1,6 +1,7 @@
 module ForecastVerification
 using Statistics
 using FFTW
+using PyPlot
 
 include("power_spectrum_2d.jl")
 
@@ -21,7 +22,7 @@ crms(x,y) = rms(x .- mean(x),y .- mean(y))
 export crms
 
 bias(x,y) = mean(x) - mean(y)
-
+export bias
 
 rms(x,y,sel) = rms(x[sel],y[sel])
 crms(x,y,sel) = crms(x[sel],y[sel])
@@ -48,9 +49,6 @@ function taylorstat(x::Vector,obs::Vector)
     σ_x = std(x,corrected=false)
     σ_obs = std(obs,corrected=false)
 
-    #@test σ_x^2 + σ_obs^2 - 2 * σ_x * σ_obs * cor(x,obs) ≈ crms(x,obs)^2
-
-    @show size(x),size(obs)
     c = cor(x,obs)
     CRMS = crms(x,obs)
 
@@ -69,6 +67,7 @@ function taylorstat(x::Matrix,obs::Vector)
     end
     return CRMS,c,σ_x,σ_obs
 end
+export taylorstat
 
 function taylorplot(x::Matrix,obs::Vector; labels = fill(nothing,size(x,2)))
     n = size(x,2)
@@ -106,7 +105,7 @@ function taylorplot(CRMS,c,σ_x,σ_obs;
 
     legend()
 end
-
+export taylorplot
 
 """
     BS = brierscore(y_true,y_prob::AbstractVector)
