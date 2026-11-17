@@ -28,6 +28,9 @@ rms(x,y,sel) = rms(x[sel],y[sel])
 crms(x,y,sel) = crms(x[sel],y[sel])
 bias(x,y,sel) = bias(x[sel],y[sel])
 
+
+nanrms(x,y) = rms(x,y,.!isnan.(x) .& .!isnan.(y))
+
 function summary(x,obs)
     s = (rms = rms(x,obs),
          crms = crms(x,obs),
