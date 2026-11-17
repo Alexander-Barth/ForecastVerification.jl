@@ -1,7 +1,6 @@
 using Test, ForecastVerification
 using Statistics
 
-
 @testset "RMS" begin
     x = [1,2.,3.,4,5]
     y = [1,3.,2.,6,5]
@@ -44,4 +43,21 @@ end
          0.8   0.5   1.5   2.4   0.4]
     xobs = [ 0.78, 2.47, 3.21, 1.13 ];
     @test ForecastVerification.CRPS(X,xobs) ≈ 0.44350
+
+
+end
+
+@testset "RCRV" begin
+    # test data and reference values are from sangoma (Fortran code)
+    # https://sourceforge.net/projects/sangoma/files/
+
+    ens = [1.1   0.8   2.2   0.5   2.4;
+         2.3   1.1   3.0   0.7   0.7;
+         1.3   3.2   0.7   2.2   3.1;
+         0.8   0.5   1.5   2.4   0.4]
+    obs = [ 0.78, 2.47, 3.21, 1.13 ];
+    RCRV_bias,RCRV_dispersion = ForecastVerification.RCRV(ens,obs,σ_obs)
+
+    @test RCRV_bias ≈ 0.28729830895778691
+    @test RCRV_dispersion ≈ 0.78442838599062137
 end

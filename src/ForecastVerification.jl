@@ -191,4 +191,40 @@ function CRPS(X::AbstractMatrix,xobs::AbstractVector)
     return crps
 end
 
+"""
+    RCRV_bias,RCRV_dispersion,s = ForecastVerification.RCRV(X::AbstractMatrix,y::AbstractVector,σ_y)
+
+Compute the Reduced Centered Random Variable (RCRV) `s` using
+`X` a matrix of size m × Nens (where Nens is the number of ensemble members and m are the number of observations), `y` a vector with `m` elements (observation)
+`σ_y`: error standard deviation of observation
+
+The ensemble mean ``mₖ``
+
+``mₖ = \\frac{1}{N} ∑_{i=1}^{N} Xₖᵢ}``
+
+The ensemble spread
+
+``σₖ² = \\frac{1}{N-1}\\sum_{i=1}^{N}\\left(Xₖᵢ-mₖ\\right)^2``
+
+Reduced centered random variable
+
+``sₖ = \\frac{yₖ - mₖ}{\\sqrt{σ_y² + σₖ²}}``
+
+`RCRV_bias` and `RCRV_dispersion` is the mean and standard deviation (bias corrected) of `s`.
+
+For a perfectly reliable system, `RCRV_bias` is zero and `RCRV_dispersion` is one.
+A `RCRV_dispersion` is larger than one, the system is underdispersive (smaller than 1, overdispersive)
+
+"""
+function RCRV(X::AbstractMatrix,y::AbstractVector,σ_y)
+    @assert size(X,1) == length(y)
+    m = findall(isfinite.(y) .&& .!ismissing.(y))
+
+    s = (y[m] - mean(X[m,:],dims=2)) ./ sqrt.(var(X[m,:],dims=2) .+ σ_y^2)
+    RCRV_bias = mean(s)
+    RCRV_dispersion = std(s)
+    return RCRV_bias,RCRV_dispersion,s
+end
+
+public RCRV
 end
