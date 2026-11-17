@@ -183,6 +183,8 @@ The Continuous Rank Probability Score (CRPS) from an ensemble X (cases,members)
 using the observation xobs (cases). The CRPS is averaged over all cases.
 """
 function CRPS(X::AbstractMatrix,xobs::AbstractVector)
+    icase = findall(isfinite.(xobs) .&& .!ismissing.(xobs))
+
     crps =
         mean([mean(abs.(X[icase,:] .- xobs[icase])) - 0.5 * mean(abs.(X[icase,:] .- X[icase,:]')) for icase = 1:length(xobs)])
 
