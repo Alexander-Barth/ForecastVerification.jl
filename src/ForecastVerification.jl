@@ -226,5 +226,6 @@ function RCRV(X::AbstractMatrix,y::AbstractVector,σ_y)
     return RCRV_bias,RCRV_dispersion,s
 end
 
-public RCRV
+VERSION >= v"1.11.0-DEV.469" && eval(Meta.parse("public RCRV"))
+
 end
