@@ -1,5 +1,6 @@
 using Test, ForecastVerification
 using Statistics
+using PyPlot
 
 @testset "RMS" begin
     x = [1,2.,3.,4,5]
@@ -20,7 +21,6 @@ end
 @testset "Brier score" begin
     y_true = [  1,  0,  1,  1,  1,  0]
     y_prob = [0.9,0.1,0.9,0.9,0.1,0.1]
-
 
     #import sklearn.metrics
     #sklearn.metrics.brier_score_loss(y_true,y_prob)
