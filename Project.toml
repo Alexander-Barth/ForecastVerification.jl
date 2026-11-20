@@ -2,6 +2,7 @@ name = "ForecastVerification"
 uuid = "fd2e94dc-1397-442f-9a83-1097d467d028"
 authors = ["Alexander Barth <barth.alexander@gmail.com>"]
 version = "0.1.0"
+license = "MIT"
 
 [deps]
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
